@@ -1,3 +1,14 @@
+---
+title: DLPFC Segmentation
+emoji: 🧠
+colorFrom: blue
+colorTo: indigo
+sdk: gradio
+app_file: app/app.py
+pinned: false
+license: mit
+---
+
 # Lightweight 3D U-Net for DLPFC Segmentation in T1-Weighted MRI
 
 Automated segmentation and spatial localization of the dorsolateral prefrontal
