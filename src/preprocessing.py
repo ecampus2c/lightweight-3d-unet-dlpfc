@@ -76,6 +76,26 @@ def resample_to_isotropic(image_path, is_mask: bool = False) -> np.ndarray:
     return sitk.GetArrayFromImage(resampler.Execute(sitk_img))
 
 
+def preprocess_image_file(image_path):
+    """Preprocess one raw T1 NIfTI for inference.
+
+    Applies the same steps as the training pipeline (resample to 1 mm isotropic,
+    centre crop/pad to 128^3, z-score over brain voxels) and returns the
+    model-ready volume together with the original NIfTI affine.
+
+    Returns
+    -------
+    (np.ndarray, np.ndarray)
+        The (128, 128, 128) float32 volume and the 4x4 affine of the input.
+    """
+    import nibabel as nib
+
+    affine = nib.load(str(image_path)).affine
+    img_iso = resample_to_isotropic(image_path, is_mask=False)
+    img_padded = center_crop_or_pad(img_iso, config.TARGET_SHAPE)
+    return normalize_zscore(img_padded), affine
+
+
 def _label_for_image(img_name: str, label_files):
     """Match an image to its mask by exact stem (caseN -> caseN_seg).
 

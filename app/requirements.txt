@@ -1,0 +1,9 @@
+# Dependencies for the web demo (app/app.py), in addition to the core pipeline.
+# On Hugging Face Spaces this file can be used as the Space's requirements.txt.
+gradio>=4.0
+numpy<2.0
+tensorflow==2.15.0
+SimpleITK==2.3.1
+nibabel==5.2.0
+patchify==0.2.3
+matplotlib==3.7.1

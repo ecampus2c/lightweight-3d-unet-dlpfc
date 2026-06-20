@@ -42,6 +42,7 @@ coefficient (DSC) and centroid (centre-of-mass) error. See
 │   ├── evaluate.py           DSC + centroid-error metrics, LOSO evaluation
 │   └── train.py              LOSO training driver (CLI)
 ├── tests/                    Pure-NumPy unit tests (+ optional TF model tests)
+├── app/                      Gradio web demo (upload MRI -> segmentation)
 ├── notebooks/
 │   └── full_pipeline_colab.py  Original Google Colab export (reference record)
 ├── data/
@@ -86,6 +87,22 @@ python -m src.evaluate
 
 Paths and hyperparameters are centralised in `src/config.py` and can be
 overridden with environment variables (e.g. `DLPFC_DATA_ROOT`).
+
+### Web demo
+
+An interactive [Gradio](https://www.gradio.app) app accepts a T1 volume and
+returns the predicted DLPFC segmentation:
+
+```bash
+pip install -r app/requirements.txt
+git lfs pull            # fetch the model weights (models/*.h5)
+python app/app.py       # then open the printed local URL
+```
+
+It produces an overlay, the target centroid, and a downloadable mask. See
+[app/README.md](app/README.md) for configuration, a temporary public link, and
+Hugging Face Spaces deployment. Research/educational use only — not a medical
+device.
 
 ## Experimental workflow
 
