@@ -1,0 +1,26 @@
+# Runtime dependencies for the DLPFC segmentation pipeline.
+# Python 3.10 is recommended. NumPy must remain < 2.0 (constraint inherited from
+# the original environment and the TensorFlow/SimpleITK versions below).
+#
+# Versions follow the original experimental environment where the authors pinned
+# them; relax the upper bounds only after re-validating results.
+
+numpy==1.26.4
+scipy>=1.10,<2.0
+pandas>=2.0,<3.0
+matplotlib==3.7.1        # version used to render the dissertation figures
+tqdm>=4.65
+h5py>=3.9                # required to read/write the .h5 model weights
+
+# Deep learning. The released .h5 weights were trained with TensorFlow 2.x on
+# Google Colab. TensorFlow 2.15 is a tested, NumPy<2-compatible choice; verify
+# against your local CUDA/cuDNN before relying on GPU acceleration.
+tensorflow==2.15.0       # REVIEW: confirm exact training version if known
+
+# Medical image I/O and patch handling
+SimpleITK==2.3.1
+nibabel==5.2.0
+patchify==0.2.3
+
+# Testing (development only)
+pytest>=7.4

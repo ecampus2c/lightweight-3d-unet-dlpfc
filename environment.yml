@@ -1,0 +1,24 @@
+# Conda environment for the DLPFC segmentation pipeline.
+#   conda env create -f environment.yml
+#   conda activate dlpfc-seg
+#
+# TensorFlow, SimpleITK, nibabel and patchify are installed via pip to match the
+# original experimental environment and to avoid conda/pip ABI conflicts.
+name: dlpfc-seg
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - numpy=1.26.4
+  - scipy>=1.10,<2.0
+  - pandas>=2.0,<3.0
+  - matplotlib=3.7.1
+  - tqdm>=4.65
+  - h5py>=3.9
+  - pip
+  - pip:
+      - tensorflow==2.15.0      # REVIEW: confirm exact training version if known
+      - SimpleITK==2.3.1
+      - nibabel==5.2.0
+      - patchify==0.2.3
+      - pytest>=7.4
