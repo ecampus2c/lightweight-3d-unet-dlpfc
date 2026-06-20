@@ -12,6 +12,13 @@ license: mit
 
 # Lightweight 3D U-Net for DLPFC Segmentation in T1-Weighted MRI
 
+[![🤗 Live Demo](https://img.shields.io/badge/%F0%9F%A4%97_Live-Demo-ffd21e?labelColor=4f46e5)](https://huggingface.co/spaces/k12apana/dlpfc-segmentation)
+[![Tests](https://github.com/ecampus2c/lightweight-3d-unet-dlpfc/actions/workflows/tests.yml/badge.svg)](https://github.com/ecampus2c/lightweight-3d-unet-dlpfc/actions/workflows/tests.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+**🤗 Live demo —** upload an MRI and get an instant segmentation:
+**<https://huggingface.co/spaces/k12apana/dlpfc-segmentation>**
+
 Automated segmentation and spatial localization of the dorsolateral prefrontal
 cortex (DLPFC) from structural brain MRI, intended to support target definition
 for repetitive transcranial magnetic stimulation (rTMS) neuronavigation.

@@ -104,7 +104,7 @@ def _save_mask(mask):
 
 def segment(nii_path, ensemble):
     if not nii_path:
-        return None, "Please upload a .nii or .nii.gz T1 volume.", None
+        return None, "⚠️ Please **upload** a `.nii` or `.nii.gz` T1 volume first.", None
     try:
         volume, _affine = preprocess_image_file(nii_path)
         models = _load_models(bool(ensemble))
@@ -115,52 +115,90 @@ def segment(nii_path, ensemble):
         cm = center_of_mass(mask)
         used = ", ".join(name for name, _ in models)
         if cm is None:
-            info = ("No DLPFC predicted (empty mask). Try enabling the ensemble "
-                    "option, or check the input volume orientation/contrast.")
-        else:
-            info = (
-                "Target centroid (voxel index in the 1 mm isotropic 128^3 grid): "
-                f"z={cm[0]:.1f}, y={cm[1]:.1f}, x={cm[2]:.1f}\n"
-                f"Predicted volume: {int(mask.sum()):,} mm^3\n"
-                f"Model(s): {used}"
-            )
+            info = ("### ⚠️ No DLPFC predicted\n"
+                    "The model returned an empty mask. Try the **Ensemble** option, "
+                    "or check the input volume's orientation and contrast.")
+            return overlay, info, None
+        info = (
+            "### ✅ Segmentation complete\n"
+            f"**Target centroid** &nbsp;(voxel, 1 mm grid)&nbsp; "
+            f"`z {cm[0]:.1f}` · `y {cm[1]:.1f}` · `x {cm[2]:.1f}`\n\n"
+            f"**Predicted volume** &nbsp; {int(mask.sum()):,} mm³\n\n"
+            f"**Model(s)** &nbsp; {used}"
+        )
         return overlay, info, _save_mask(mask)
     except Exception as exc:  # surface a readable message in the UI
-        return None, f"Error: {exc}", None
+        return None, f"### ❌ Error\n```\n{exc}\n```", None
 
 
-DESCRIPTION = """
-# DLPFC Segmentation from T1 MRI
+THEME = gr.themes.Soft(
+    primary_hue="indigo",
+    secondary_hue="blue",
+    neutral_hue="slate",
+    font=[gr.themes.GoogleFont("Inter"), "system-ui", "sans-serif"],
+)
 
-Upload a T1-weighted brain MRI (`.nii` or `.nii.gz`). The volume is resampled to
-1 mm isotropic, cropped/padded to 128x128x128 and z-score normalised, then a
-lightweight 3D U-Net predicts the dorsolateral prefrontal cortex (DLPFC). You
-get an overlay, the target centroid, and the mask as a downloadable NIfTI.
-
-**Research and educational use only.** This is a prototype trained on a
-10-subject cohort. It is not a medical device and must not be used for diagnosis
-or treatment planning. The downloadable mask is in the preprocessed 1 mm
-isotropic space, not the original scanner space.
+CSS = """
+.gradio-container {max-width: 1024px !important; margin: auto !important;}
+#hero {text-align:center; padding: 30px 22px; border-radius: 20px; margin-bottom: 4px;
+  background: linear-gradient(135deg,#4f46e5 0%,#7c3aed 55%,#9333ea 100%);
+  box-shadow: 0 12px 34px rgba(99,102,241,.30);}
+#hero h1 {color:#fff; font-size: 2.15rem; font-weight: 800; margin: 0; letter-spacing:-.01em;}
+#hero p {color:#e0e7ff; margin: 10px 0 0; font-size: 1.04rem;}
+#disclaimer {font-size:.84rem; line-height:1.45; color:#92400e; background:#fffbeb;
+  border:1px solid #fcd34d; border-radius:12px; padding:10px 14px; margin:10px 0;}
+#go {font-weight:700;}
+#steps {font-size:.86rem; color:var(--body-text-color-subdued); margin-top:8px;}
+#foot {text-align:center; color:var(--body-text-color-subdued); font-size:.84rem;
+  margin-top:14px; padding-top:10px; border-top:1px solid var(--border-color-primary);}
+#foot a {color:var(--primary-500); text-decoration:none; font-weight:600;}
 """
+
+HERO = """
+<div id="hero">
+  <h1>🧠 DLPFC Segmentation</h1>
+  <p>Upload a T1-weighted brain MRI and localize the dorsolateral prefrontal cortex for rTMS targeting</p>
+</div>
+"""
+
+DISCLAIMER = (
+    "<div id='disclaimer'>⚠️ <b>Research and educational use only.</b> A prototype trained on a "
+    "10-subject cohort — not a medical device, and not for diagnosis or treatment planning. "
+    "The downloadable mask is in the preprocessed 1&nbsp;mm isotropic space, not the original "
+    "scanner space.</div>"
+)
+
+FOOTER = (
+    "<div id='foot'>Lightweight 3D U-Net &nbsp;·&nbsp; leave-one-subject-out validated (N=10) "
+    "&nbsp;·&nbsp; <a href='https://github.com/ecampus2c/lightweight-3d-unet-dlpfc' "
+    "target='_blank'>source on GitHub</a></div>"
+)
 
 
 def build_demo():
     with gr.Blocks(title="DLPFC Segmentation") as demo:
-        gr.Markdown(DESCRIPTION)
+        gr.HTML(HERO)
+        gr.HTML(DISCLAIMER)
         with gr.Row():
-            with gr.Column():
-                inp = gr.File(label="T1 MRI (.nii / .nii.gz)",
-                              file_types=[".nii", ".gz"], type="filepath")
-                ens = gr.Checkbox(label="Ensemble all models (slower, more robust)",
-                                  value=False)
-                btn = gr.Button("Segment", variant="primary")
-            with gr.Column():
-                out_img = gr.Image(label="Predicted segmentation (overlay)")
-                out_txt = gr.Textbox(label="Target details", lines=4)
-                out_file = gr.File(label="Download predicted mask (.nii.gz)")
-        btn.click(segment, inputs=[inp, ens], outputs=[out_img, out_txt, out_file])
+            with gr.Column(scale=5):
+                with gr.Group():
+                    inp = gr.File(label="T1 MRI  (.nii / .nii.gz)",
+                                  file_types=[".nii", ".gz"], type="filepath")
+                    ens = gr.Checkbox(label="Ensemble all models  (slower, more robust)",
+                                      value=False)
+                    btn = gr.Button("🔬  Segment", variant="primary", size="lg", elem_id="go")
+                gr.HTML("<div id='steps'><b>Pipeline:</b> resample to 1&nbsp;mm isotropic → "
+                        "128³ crop/pad → z-score → 3D U-Net → sliding-window inference → "
+                        "threshold at 0.5.</div>")
+            with gr.Column(scale=6):
+                out_img = gr.Image(label="Predicted DLPFC (overlay)", height=360)
+                out_md = gr.Markdown("Upload a volume and press **Segment** — "
+                                     "results will appear here.")
+                out_file = gr.File(label="Predicted mask (.nii.gz)")
+        gr.HTML(FOOTER)
+        btn.click(segment, inputs=[inp, ens], outputs=[out_img, out_md, out_file])
     return demo
 
 
 if __name__ == "__main__":
-    build_demo().launch()
+    build_demo().launch(theme=THEME, css=CSS)
