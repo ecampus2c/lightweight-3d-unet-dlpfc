@@ -1,10 +1,12 @@
-# Large binary artifacts and patient-derived data.
-# These are NOT committed to plain Git. Distribute via Git LFS or an external
-# data repository (see DATASET.md and RELEASE_CHECKLIST.md).
-*.h5
+# Patient-derived imaging is NOT committed (privacy + size). Distribute via an
+# external data repository if needed (see DATASET.md).
 *.npz
 *.nii
 *.nii.gz
+
+# Model weights are tracked with Git LFS (see .gitattributes); un-ignore them.
+*.h5
+!models/*.h5
 
 # Result figures (results/figures/*.png) ARE tracked — do not ignore *.png.
 
