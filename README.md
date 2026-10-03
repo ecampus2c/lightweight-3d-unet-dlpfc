@@ -23,10 +23,12 @@ Automated segmentation and spatial localization of the dorsolateral prefrontal
 cortex (DLPFC) from structural brain MRI, intended to support target definition
 for repetitive transcranial magnetic stimulation (rTMS) neuronavigation.
 
-This repository accompanies the doctoral dissertation of K. A. Apana
-(St. Petersburg Electrotechnical University "LETI"). It contains the
-preprocessing, model, training, inference and evaluation code, the trained
-leave-one-subject-out (LOSO) models, and the figures reported in the thesis.
+This repository accompanies the doctoral research of Kenneth Apana, a PhD
+student in Artificial Intelligence and Machine Learning at St. Petersburg
+Electrotechnical University "LETI" (dissertation in preparation). It contains
+the preprocessing, model, training, inference and evaluation code (TensorFlow/Keras
+and PyTorch), the trained leave-one-subject-out (LOSO) models, and the figures
+reported in the thesis and the publications listed [below](#publications).
 
 ## Research objectives
 
@@ -59,15 +61,19 @@ coefficient (DSC) and centroid (centre-of-mass) error. See
 │   ├── data.py               .npz loading + class-balanced patch generator
 │   ├── inference.py          Sliding-window full-volume inference
 │   ├── evaluate.py           DSC + centroid-error metrics, LOSO evaluation
-│   └── train.py              LOSO training driver (CLI)
-├── tests/                    Pure-NumPy unit tests (+ optional TF model tests)
+│   ├── train.py              LOSO training driver (CLI)
+│   ├── torch_model.py        PyTorch port of the 3D U-Net + BCE/Dice loss
+│   ├── torch_train.py        LOSO training driver, PyTorch (CLI)
+│   └── convert_weights.py    Keras .h5 -> PyTorch .pt weight conversion
+├── tests/                    Pure-NumPy unit tests (+ optional TF / PyTorch model tests)
 ├── app/                      Gradio web demo (upload MRI -> segmentation)
 ├── notebooks/
 │   └── full_pipeline_colab.py  Original Google Colab export (reference record)
 ├── data/
 │   ├── raw/{images,labels}/  T1 volumes and expert masks (.nii) [not in Git]
 │   └── preprocessed/         128³ .npz volumes [not in Git]
-├── models/                   LOSO model weights, best_model_caseN.h5 [not in Git]
+├── models/                   LOSO model weights, best_model_caseN.h5 [Git LFS]
+│   └── pytorch/              The same weights converted to PyTorch, best_model_caseN.pt [Git LFS]
 ├── results/figures/          Per-subject overlays and analysis figures (.png)
 ├── requirements.txt, environment.yml
 └── *.md                      Documentation (see below)
@@ -106,6 +112,40 @@ python -m src.evaluate
 
 Paths and hyperparameters are centralised in `src/config.py` and can be
 overridden with environment variables (e.g. `DLPFC_DATA_ROOT`).
+
+### PyTorch
+
+The model is also available in PyTorch, with the trained LOSO weights converted
+from Keras (`models/pytorch/best_model_caseN.pt`). Architecture, loss, sampling,
+augmentation and training schedule are the same as the Keras pipeline.
+
+```bash
+pip install -r requirements.txt -r requirements-torch.txt
+git lfs pull                                  # fetch the weights
+
+# Re-train with PyTorch -> models/pytorch/best_model_<id>.pt
+python -m src.torch_train --epochs 80
+
+# Or convert Keras weights yourself (reads .h5 with h5py; TensorFlow not needed)
+python -m src.convert_weights
+```
+
+Inference reuses the existing sliding-window code through a small adapter:
+
+```python
+from src.inference import sliding_window_inference
+from src.torch_model import TorchPredictor, load_model
+
+model = TorchPredictor(load_model("models/pytorch/best_model_case1.pt"))
+prob = sliding_window_inference(model, volume)   # (D, H, W, 1) probabilities
+```
+
+**Equivalence with Keras.** All ten converted models were checked against the
+original `.h5` models on the same T1 patch (96³): maximum probability
+difference 8.3 × 10⁻⁶; thresholded masks identical in nine folds and differing
+by a single borderline voxel in the tenth (mask Dice 1.0000).
+`tests/test_torch_model.py` repeats the check on a randomly initialised model
+when both frameworks are installed.
 
 ### Web demo
 
@@ -154,17 +194,55 @@ figures are in `results/figures/`.
 - [STRUCTURAL_CHANGES.md](STRUCTURAL_CHANGES.md) — reorganization record
 - [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) — pre-publication checks
 
+## Publications
+
+1. Apana A., Shichkina Yu. *Patch-Based Lightweight 3D CNNs for Anatomical Brain
+   Segmentation Under Severe Data Scarcity: Automated DLPFC Segmentation in
+   Structural MRI.* Preprints.org, 2026.
+   DOI: [10.20944/preprints202603.0020.v1](https://doi.org/10.20944/preprints202603.0020.v1)
+2. Apana K.A., Shichkina Yu.A. *A Method for Mitigating Boundary Truncation
+   Artifacts in Sliding-Window 3D Inference for Lightweight Brain Segmentation.*
+   Proc. 7th Int. Conf. on Neural Networks and Neurotechnologies (NeuroNT'2026),
+   St. Petersburg, 2026, pp. 243–248.
+3. Апана К.А., Шичкина Ю.А. Сегментация анатомических структур мозга с помощью
+   патчевых легковесных 3D сверточных нейронных сетей в условиях экстремальной
+   нехватки данных: автоматическая сегментация DLPFC в структурной МРТ //
+   Современная наука: актуальные проблемы теории и практики. Серия: Естественные
+   и технические науки. 2026. № 4. С. 55–63.
+4. Апана К.А., Шичкина Ю.А. Эффективная обработка малых данных в трёхмерной
+   объёмной сегментации нейроизображений: ограничение параметров как структурный
+   регуляризатор // Современная наука: актуальные проблемы теории и практики.
+   Серия: Естественные и технические науки. 2026. № 5-2. С. 42–47.
+5. Апана К.А., Шичкина Ю.А. Алгоритмическое устранение артефактов граничного
+   усечения при выводе методом скользящего окна в трёхмерном случае для
+   сегментации головного мозга // Перспективы науки. 2026. № 6 (201). С. 106–109.
+6. Ayinbuno A. *A Novel Approach for Personalized DLPFC Localization in
+   Neuroimaging and Brain Stimulation Using Mask R-CNN.* IEEE SCM 2025,
+   pp. 456–462. DOI: [10.1109/SCM66446.2025.11060233](https://doi.org/10.1109/SCM66446.2025.11060233)
+   (earlier 2D approach to the same localization task)
+
 ## Citation
 
-If you use this code, please cite the dissertation:
+If you use this code, please cite the preprint (publication 1 above); the
+dissertation is in preparation:
 
 ```bibtex
-@phdthesis{apana2026dlpfc,
+@misc{apana2026patch,
+  author    = {Apana, Kenneth Ayinbuno and Shichkina, Yulia Aleksandrovna},
+  title     = {Patch-Based Lightweight {3D} {CNNs} for Anatomical Brain Segmentation
+               Under Severe Data Scarcity: Automated {DLPFC} Segmentation in
+               Structural {MRI}},
+  publisher = {Preprints.org},
+  year      = {2026},
+  doi       = {10.20944/preprints202603.0020.v1}
+}
+
+@phdthesis{apana_dlpfc_dissertation,
   author = {Apana, Kenneth Ayinbuno},
   title  = {Development of artificial intelligence methods for precise spatial
             localization in volumetric neuroimaging data},
   school = {St. Petersburg Electrotechnical University (LETI)},
-  year   = {2026}
+  note   = {In preparation}
 }
 ```
 
