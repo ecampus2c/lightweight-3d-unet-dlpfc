@@ -23,10 +23,12 @@ Automated segmentation and spatial localization of the dorsolateral prefrontal
 cortex (DLPFC) from structural brain MRI, intended to support target definition
 for repetitive transcranial magnetic stimulation (rTMS) neuronavigation.
 
-This repository accompanies the doctoral dissertation of K. A. Apana
-(St. Petersburg Electrotechnical University "LETI"). It contains the
-preprocessing, model, training, inference and evaluation code, the trained
-leave-one-subject-out (LOSO) models, and the figures reported in the thesis.
+This repository accompanies the doctoral research of Kenneth Apana, a PhD
+student in Artificial Intelligence and Machine Learning at St. Petersburg
+Electrotechnical University "LETI" (dissertation in preparation). It contains
+the preprocessing, model, training, inference and evaluation code (TensorFlow/Keras
+and PyTorch), the trained leave-one-subject-out (LOSO) models, and the figures
+reported in the thesis and the publications listed [below](#publications).
 
 ## Research objectives
 
@@ -192,17 +194,55 @@ figures are in `results/figures/`.
 - [STRUCTURAL_CHANGES.md](STRUCTURAL_CHANGES.md) — reorganization record
 - [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) — pre-publication checks
 
+## Publications
+
+1. Apana A., Shichkina Yu. *Patch-Based Lightweight 3D CNNs for Anatomical Brain
+   Segmentation Under Severe Data Scarcity: Automated DLPFC Segmentation in
+   Structural MRI.* Preprints.org, 2026.
+   DOI: [10.20944/preprints202603.0020.v1](https://doi.org/10.20944/preprints202603.0020.v1)
+2. Apana K.A., Shichkina Yu.A. *A Method for Mitigating Boundary Truncation
+   Artifacts in Sliding-Window 3D Inference for Lightweight Brain Segmentation.*
+   Proc. 7th Int. Conf. on Neural Networks and Neurotechnologies (NeuroNT'2026),
+   St. Petersburg, 2026, pp. 243–248.
+3. Апана К.А., Шичкина Ю.А. Сегментация анатомических структур мозга с помощью
+   патчевых легковесных 3D сверточных нейронных сетей в условиях экстремальной
+   нехватки данных: автоматическая сегментация DLPFC в структурной МРТ //
+   Современная наука: актуальные проблемы теории и практики. Серия: Естественные
+   и технические науки. 2026. № 4. С. 55–63.
+4. Апана К.А., Шичкина Ю.А. Эффективная обработка малых данных в трёхмерной
+   объёмной сегментации нейроизображений: ограничение параметров как структурный
+   регуляризатор // Современная наука: актуальные проблемы теории и практики.
+   Серия: Естественные и технические науки. 2026. № 5-2. С. 42–47.
+5. Апана К.А., Шичкина Ю.А. Алгоритмическое устранение артефактов граничного
+   усечения при выводе методом скользящего окна в трёхмерном случае для
+   сегментации головного мозга // Перспективы науки. 2026. № 6 (201). С. 106–109.
+6. Ayinbuno A. *A Novel Approach for Personalized DLPFC Localization in
+   Neuroimaging and Brain Stimulation Using Mask R-CNN.* IEEE SCM 2025,
+   pp. 456–462. DOI: [10.1109/SCM66446.2025.11060233](https://doi.org/10.1109/SCM66446.2025.11060233)
+   (earlier 2D approach to the same localization task)
+
 ## Citation
 
-If you use this code, please cite the dissertation:
+If you use this code, please cite the preprint (publication 1 above); the
+dissertation is in preparation:
 
 ```bibtex
-@phdthesis{apana2026dlpfc,
+@misc{apana2026patch,
+  author    = {Apana, Kenneth Ayinbuno and Shichkina, Yulia Aleksandrovna},
+  title     = {Patch-Based Lightweight {3D} {CNNs} for Anatomical Brain Segmentation
+               Under Severe Data Scarcity: Automated {DLPFC} Segmentation in
+               Structural {MRI}},
+  publisher = {Preprints.org},
+  year      = {2026},
+  doi       = {10.20944/preprints202603.0020.v1}
+}
+
+@phdthesis{apana_dlpfc_dissertation,
   author = {Apana, Kenneth Ayinbuno},
   title  = {Development of artificial intelligence methods for precise spatial
             localization in volumetric neuroimaging data},
   school = {St. Petersburg Electrotechnical University (LETI)},
-  year   = {2026}
+  note   = {In preparation}
 }
 ```
 
