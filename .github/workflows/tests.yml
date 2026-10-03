@@ -30,3 +30,23 @@ jobs:
 
       - name: Run tests
         run: pytest -q
+
+  test-pytorch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install test dependencies (CPU PyTorch)
+        # Runs the PyTorch port tests; the Keras-equivalence test still skips
+        # because TensorFlow is not installed here.
+        run: |
+          python -m pip install --upgrade pip
+          pip install "numpy<2.0" pytest h5py
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Run PyTorch tests
+        run: pytest -q tests/test_torch_model.py

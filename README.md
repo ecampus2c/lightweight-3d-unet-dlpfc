@@ -59,15 +59,19 @@ coefficient (DSC) and centroid (centre-of-mass) error. See
 │   ├── data.py               .npz loading + class-balanced patch generator
 │   ├── inference.py          Sliding-window full-volume inference
 │   ├── evaluate.py           DSC + centroid-error metrics, LOSO evaluation
-│   └── train.py              LOSO training driver (CLI)
-├── tests/                    Pure-NumPy unit tests (+ optional TF model tests)
+│   ├── train.py              LOSO training driver (CLI)
+│   ├── torch_model.py        PyTorch port of the 3D U-Net + BCE/Dice loss
+│   ├── torch_train.py        LOSO training driver, PyTorch (CLI)
+│   └── convert_weights.py    Keras .h5 -> PyTorch .pt weight conversion
+├── tests/                    Pure-NumPy unit tests (+ optional TF / PyTorch model tests)
 ├── app/                      Gradio web demo (upload MRI -> segmentation)
 ├── notebooks/
 │   └── full_pipeline_colab.py  Original Google Colab export (reference record)
 ├── data/
 │   ├── raw/{images,labels}/  T1 volumes and expert masks (.nii) [not in Git]
 │   └── preprocessed/         128³ .npz volumes [not in Git]
-├── models/                   LOSO model weights, best_model_caseN.h5 [not in Git]
+├── models/                   LOSO model weights, best_model_caseN.h5 [Git LFS]
+│   └── pytorch/              The same weights converted to PyTorch, best_model_caseN.pt [Git LFS]
 ├── results/figures/          Per-subject overlays and analysis figures (.png)
 ├── requirements.txt, environment.yml
 └── *.md                      Documentation (see below)
@@ -106,6 +110,40 @@ python -m src.evaluate
 
 Paths and hyperparameters are centralised in `src/config.py` and can be
 overridden with environment variables (e.g. `DLPFC_DATA_ROOT`).
+
+### PyTorch
+
+The model is also available in PyTorch, with the trained LOSO weights converted
+from Keras (`models/pytorch/best_model_caseN.pt`). Architecture, loss, sampling,
+augmentation and training schedule are the same as the Keras pipeline.
+
+```bash
+pip install -r requirements.txt -r requirements-torch.txt
+git lfs pull                                  # fetch the weights
+
+# Re-train with PyTorch -> models/pytorch/best_model_<id>.pt
+python -m src.torch_train --epochs 80
+
+# Or convert Keras weights yourself (reads .h5 with h5py; TensorFlow not needed)
+python -m src.convert_weights
+```
+
+Inference reuses the existing sliding-window code through a small adapter:
+
+```python
+from src.inference import sliding_window_inference
+from src.torch_model import TorchPredictor, load_model
+
+model = TorchPredictor(load_model("models/pytorch/best_model_case1.pt"))
+prob = sliding_window_inference(model, volume)   # (D, H, W, 1) probabilities
+```
+
+**Equivalence with Keras.** All ten converted models were checked against the
+original `.h5` models on the same T1 patch (96³): maximum probability
+difference 8.3 × 10⁻⁶; thresholded masks identical in nine folds and differing
+by a single borderline voxel in the tenth (mask Dice 1.0000).
+`tests/test_torch_model.py` repeats the check on a randomly initialised model
+when both frameworks are installed.
 
 ### Web demo
 

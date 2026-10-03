@@ -1,0 +1,6 @@
+# Optional dependencies for the PyTorch port (src/torch_*.py, src/convert_weights.py).
+# Install on top of requirements.txt. For CUDA builds of PyTorch, follow
+# https://pytorch.org/get-started/locally/ instead of the plain pip line.
+
+torch>=2.1
+h5py>=3.9                # reads the Keras .h5 weights for conversion; no TensorFlow needed
